@@ -49,4 +49,8 @@ export class UserService {
     async validatePassword(user: IUser, password: string): Promise<boolean> {
         return bcrypt.compare(password, user.password);
     }
+
+    async getUserByEmail(email: string): Promise<IUser | null> {
+        return this.userRepository.findByEmail(email);
+    }
 } 

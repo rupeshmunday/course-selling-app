@@ -4,17 +4,23 @@ class MongoConnection {
     static mongoInstance : any;
 
     static async connect(){
-        if(this.mongoInstance) {
+        if(this.mongoInstance){
             return this.mongoInstance;
         }
-        return new Promise<void>((resolve, reject) => {
-            console.log('Mongo Connected')
+        try {
             const dbString = 'mongodb://' + CONFIG?.MONGO.host + '/' + CONFIG?.MONGO.dbName;
-            this.mongoInstance = mongoose.createConnection(dbString, CONFIG?.MONGO.option);
+            const conn = await mongoose.connect(dbString, CONFIG?.MONGO.option);
+            
+            if(!conn) {
+                console.error('MongoDB connection failed');
+                return;
+            }
 
+            console.log('Mongo Connected');
+            
+            this.mongoInstance = conn.connection;
             this.mongoInstance.on('error',(error:any)=>{
                 console.error('Could not connect to MongoDB',error);
-                reject('Could not connect to MongoDB');
             })
 
             this.mongoInstance.on('disconnected',(err:any)=>{
@@ -24,12 +30,12 @@ class MongoConnection {
 
             this.mongoInstance.on('open',()=>{
                 console.info("MongoDb connected successfully");
-                resolve(this.mongoInstance);
             })
             mongoose.set('debug', CONFIG?.MONGO.debug);
-        }).catch((error)=>{
+            return this.mongoInstance;
+        } catch (error) {
             console.error('Error while connecting...', error);
-        })
+        }
     }
 
     static getInstance() {

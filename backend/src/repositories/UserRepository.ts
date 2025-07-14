@@ -14,8 +14,12 @@ export class UserRepository {
     }
 
     async create(userData: Partial<IUser>): Promise<IUser> {
-        const user = new User(userData);
-        return user.save();
+        try {
+            const user = new User(userData);
+            return user.save();
+        } catch (error) {
+            return Promise.reject(error);
+        }
     }
 
     async update(id: string, userData: Partial<IUser>): Promise<IUser | null> {
@@ -25,4 +29,4 @@ export class UserRepository {
     async delete(id: string): Promise<IUser | null> {
         return User.findByIdAndDelete(id);
     }
-} 
+}
