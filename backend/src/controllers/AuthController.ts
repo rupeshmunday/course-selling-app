@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AuthService } from "../services/AuthService";
 import { UserService } from "../services/UserService";
 import { IUser } from '../models/User';
+import { AuthenticatedRequest } from "../middlewares/authMiddleware";
 // import { Types } from 'mongoose';
 
 import { log } from "console";
@@ -45,6 +46,23 @@ export class AuthController {
                 console.log("Error during login:", error);
                 
                 res.status(500).json({ error: "Failed to login" });
+            }
+        }
+
+        logout = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+            log("Logout request received", req.user,req.user?.jti);
+            try {
+                if (!req.user || !req.user.jti || !req.user.userId) {
+                    res.status(400).json({ error: "User ID and JTI are required" });
+                    return;
+                }
+                const { userId, jti } = req.user; // Assuming jti is passed in the request body
+
+                await this.authService.signout(userId, jti);
+                res.json({ message: "Logout successful" });
+            } catch (error) {
+                console.log("Error during logout:", error);
+                res.status(500).json({ error: "Failed to logout" });
             }
         }
     

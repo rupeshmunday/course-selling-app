@@ -32,13 +32,16 @@ export class AuthService {
         await redisClient.setEx(key, ttl, "valid"); // Expires in 1h
     }
 
-    async invalidateToken(jti: string): Promise<void> {
-        await redisClient.del(jti);
+    async invalidateToken(userId: string,jti: string): Promise<void> {
+        const key = `jti:${userId}:${jti}`;
+        await redisClient.del(key);
     }
 
     async isTokenValid(userId: string, jti: string): Promise<boolean> {
         const key = `jti:${userId}:${jti}`;
         const result = await redisClient.get(key);
+        console.log(`Checking token validity for user ${userId} with JTI ${jti}:`, result);
+        
         return result === "valid";
     }
 
@@ -64,7 +67,8 @@ export class AuthService {
     }
 
     signout = async (userId: string, jti: string): Promise<void> => {
-        await this.invalidateToken(jti);
+        await this.invalidateToken(userId,jti);
+        console.log(`Token with JTI ${jti} for user ${userId} has been invalidated.`);       
         // Optionally, you can also remove the JTI from Redis
         // const key = `jti:${userId}:${jti}`;
         // await redisClient.del(key);

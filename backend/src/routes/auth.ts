@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/AuthController";
+import { authenticateJWT } from "../middlewares/authMiddleware";
 
 const authRouter = Router();
 const authController = new AuthController();
@@ -30,6 +31,7 @@ const authController = new AuthController();
  *         description: Login successful, returns access token
  */
 authRouter.post('/v1/login', authController.login);
+authRouter.post('/v1/logout', authenticateJWT ,authController.logout);
 
 
 
